@@ -2,10 +2,18 @@
 
 # 🐍 جعبه‌ابزار PyLauncher - تبدیل پرتابل پایتون به EXE
 
+</div>
+
+<div dir="ltr" align="center">
+
 ![Python Version](https://img.shields.io/badge/Python-3.11-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Production--Ready-success)
+
+</div>
+
+<div dir="rtl" align="right">
 
 **PyLauncher** یک ابزار قدرتمند و کاملاً پرتابل (قابل حمل) برای تبدیل اسکریپت‌های پایتون به فایل‌های اجرایی (EXE) است که به طور خاص برای محیط‌های محدود طراحی شده است. محیط‌هایی که در آن‌ها نمی‌توانید پایتون، PyInstaller یا هیچ نرم‌افزار جانبی دیگری را نصب کنید.
 
@@ -51,9 +59,13 @@
 
 ما یک اسکریپت ساخت خودکار برای شما آماده کرده‌ایم! اگر فایل `converter_gui.py` را تغییر دادید یا پکیج جدیدی نصب کردید، فقط کافیست فایل زیر را اجرا کنید:
 
+</div>
+
 ```cmd
 Build.bat
 ```
+
+<div dir="rtl" align="right">
 
 **فایل `Build.bat` چه کارهایی می‌کند؟**
 1. مسیر اصلی پروژه را به صورت هوشمند تشخیص می‌دهد.
@@ -69,6 +81,6 @@ Build.bat
 - **تاخیر در اجرای اولیه:** در حالت تک‌فایلی، اولین اجرا ۳ تا ۵ ثانیه طول می‌کشد زیرا برنامه باید محیط پایتون را در پوشه موقت باز کند.
 
 ---
+*طراحی و توسعه با ❤️ توسط [محمد آزادفر]*
 
 </div>
-*طراحی و توسعه با ❤️ توسط [محمد آزادفر]*
