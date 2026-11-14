@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.pytest_cache/
+
+# PyInstaller Build Artifacts
+build/
+dist/
+*.spec
+
+# Logs & Debug files
+*.log
+build_log.txt
+gui_crash.log
+bootstrap_debug.log
+pkg_manager_log_*.txt
+
+# Compressed Env
+env_pack.zip
+
+# OS Files
+.DS_Store
+Thumbs.db
