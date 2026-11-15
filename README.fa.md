@@ -13,6 +13,28 @@
 
 ---
 
+<div dir="rtl" align="right">
+
+## 📸 تصاویر محیط برنامه
+
+<div align="center">
+  <h3>محیط اصلی برنامه</h3>
+  <img src="screenshots/main_ui.png" width="85%" alt="محیط اصلی" />
+  
+  <br><br>
+  
+  <h3>تنظیمات ساخت (Build Options)</h3>
+  <img src="screenshots/build.png" width="50%" alt="تنظیمات ساخت" />
+  
+  <br><br>
+  
+  <h3>مدیریت بسته‌ها (Package Manager)</h3>
+  <img src="screenshots/config1_ui.png" width="48%" alt="مدیریت بسته - نصب شده" />
+  <img src="screenshots/config2_ui.png" width="48%" alt="مدیریت بسته - اینترنت" />
+</div>
+
+</div>
+
 ## ✨ قابلیت‌های فوق‌العاده (نسخه v3.5.1)
 
 - **🎨 رابط کاربری مدرن و شرکتی:** طراحی کاملاً جدید با تم داشبورد حرفه‌ای، کارت‌های استایل‌دهی شده و دکمه‌های رنگی مدرن.
