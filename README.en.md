@@ -3,7 +3,7 @@
 ![Python Version](https://img.shields.io/badge/Python-3.11-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Status](https://img.shields.io/badge/Status-Production--Ready-success)
+![Status](https://img.shields.io/badge/Status-Beta-orange)
 
 **PyLauncher** is a powerful, fully portable Python-to-EXE converter designed specifically for restricted environments where you cannot install Python, PyInstaller, or any third-party software. 
 
@@ -23,9 +23,10 @@ Whether you are dealing with strict corporate IT policies, no internet access, o
   - **Install Online:** Search for packages (e.g., `pandas`), check size/version via PyPI API, and install.
   - **Install Offline:** No internet? Simply load a `.whl` or `.tar.gz` file and install it directly into the portable environment.
 - **🕵️ Smart Dependency Scanner:** Before converting, the app analyzes your script using AST (Abstract Syntax Tree) to verify if all required third-party libraries are installed. It highlights missing packages in red, preventing failed EXE builds.
-- **🛡️ Antivirus Friendly:** Uses `--onedir` and `--noupx` flags by default. This structure is significantly less likely to trigger false positives from strict antivirus software compared to standard `--onefile` builds.
-- **🖥️ Beautiful Dual-Language UI:** A modern, RTL-supported Graphical User Interface (Tkinter) with real-time console logs.
-- **📥 Live Download Progress:** Integrated terminal output that parses `pip` output to show real-time download progress and file sizes.
+- **🛡️ Antivirus Friendly:** Uses `--onedir` and `--noupx` flags by default. This structure is significantly less likely to trigger false positives from strict antivirus software.
+- **🖥️ Beautiful UI & Advanced Options:** Drag & drop files, add data files, choose onefile/onedir, set custom icons, and select output directories.
+- **📥 Live Download Progress:** Integrated terminal output that parses `pip` output to show real-time download progress.
+- **🚨 Crash Protection:** Global exception handling ensures the app never closes unexpectedly and always saves a crash log.
 
 ---
 
@@ -47,7 +48,7 @@ Whether you are dealing with strict corporate IT policies, no internet access, o
 
 ## 🏗️ Building the EXE from Source
 
-We have included an automated build script! If you modify the `converter_gui.py` or update packages in the `env` folder, simply run:
+We have included an automated build script! If you modify the `converter_gui.py` or update packages, simply run:
 
 ```cmd
 Build.bat
@@ -55,9 +56,10 @@ Build.bat
 
 **What `Build.bat` does:**
 1. Automatically detects the project root.
-2. Compresses the `env` folder into `env_pack.zip` using the fastest available tool (WinRAR, 7-Zip, or Windows `tar`).
-3. Runs PyInstaller using the *internal portable Python* (no system Python needed).
-4. Outputs the final `PyLauncher.exe` in the `dist` folder.
+2. Runs `clean_env.py` to remove unnecessary test files and reduce final EXE size.
+3. Compresses the `env` folder into `env_pack.zip` using the fastest available tool (WinRAR, 7-Zip, or Windows `tar`).
+4. Runs PyInstaller using the *internal portable Python* (no system Python needed).
+5. Outputs the final `PyLauncher.exe` in the `dist` folder.
 
 ---
 
@@ -67,4 +69,4 @@ Build.bat
 - **First Run Delay:** In Single-File mode, the first launch takes 3-5 seconds because it needs to extract the Python environment to the Temp folder.
 
 ---
-*Designed & Developed with ❤️ by [Mohammad Azadfar]*
+*Designed & Developed with ❤️ by [Mohammad Azadfar](https://github.com/Azadfar2009)*
