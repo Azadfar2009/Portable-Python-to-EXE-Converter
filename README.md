@@ -17,18 +17,18 @@ Whether you are dealing with strict corporate IT policies, no internet access, o
 
 <div align="center">
   <h3>Main Interface</h3>
-  <img src="screenshots/main_ui.png" width="85%" alt="Main Interface" />
+  <img src="Screenshots/main_ui.png" width="85%" alt="Main Interface" />
   
   <br><br>
   
   <h3>Build Options</h3>
-  <img src="screenshots/build.png" width="50%" alt="Build Options" />
+  <img src="Screenshots/build.png" width="50%" alt="Build Options" />
   
   <br><br>
   
   <h3>Package Manager</h3>
-  <img src="screenshots/config1_ui.png" width="48%" alt="Config - Installed" />
-  <img src="screenshots/config2_ui.png" width="48%" alt="Config - Internet" />
+  <img src="Screenshots/config1_ui.png" width="48%" alt="Config - Installed" />
+  <img src="Screenshots/config2_ui.png" width="48%" alt="Config - Internet" />
 </div>
 
 ## ✨ Killer Features (v3.5.1)
