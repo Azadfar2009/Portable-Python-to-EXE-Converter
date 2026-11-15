@@ -13,6 +13,24 @@ Whether you are dealing with strict corporate IT policies, no internet access, o
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+  <h3>Main Interface</h3>
+  <img src="screenshots/main_ui.png" width="85%" alt="Main Interface" />
+  
+  <br><br>
+  
+  <h3>Build Options</h3>
+  <img src="screenshots/build.png" width="50%" alt="Build Options" />
+  
+  <br><br>
+  
+  <h3>Package Manager</h3>
+  <img src="screenshots/config1_ui.png" width="48%" alt="Config - Installed" />
+  <img src="screenshots/config2_ui.png" width="48%" alt="Config - Internet" />
+</div>
+
 ## ✨ Killer Features (v3.5.1)
 
 - **🎨 Modern Corporate UI:** Completely redesigned interface with a professional dashboard theme, styled cards, and vibrant modern buttons.
