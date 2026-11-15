@@ -8,20 +8,18 @@ env/
 venv/
 .pytest_cache/
 
-# PyInstaller Build Artifacts
+# Build Artifacts & Auto-generated
+temp/
+output/
 build/
 dist/
 *.spec
-
-# Logs & Debug files
-*.log
-build_log.txt
-gui_crash.log
-bootstrap_debug.log
-pkg_manager_log_*.txt
-
-# Compressed Env
 env_pack.zip
+
+# Logs
+*.log
+crash_log.txt
+build_log.txt
 
 # OS Files
 .DS_Store
