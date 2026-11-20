@@ -16,6 +16,8 @@ import urllib.error
 import time
 import gzip
 import traceback
+import hashlib
+import hmac
 from datetime import datetime
 from pathlib import Path
 import tkinter as tk
@@ -79,6 +81,20 @@ APP_TEMP_DIR = Path(tempfile.gettempdir()) / "PyLauncher_Temp"
 APP_TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
 PYTHON_EXE = sys.executable.replace("pythonw.exe", "python.exe")
+
+# Access-gate verification material (PBKDF2-HMAC-SHA256, salted, no plaintext secrets).
+_AUTH_SALT = "13a3de32f17b681f9a0233e4ba77340a"
+_AUTH_HASH = "1bdee94cb6366a552ce02e86b48fbbafeb2e6a82ffd56bc739e8cc4765b5a856"
+_AUTH_ITERS = 600000
+
+def _verify_access_key(candidate):
+    """Constant-time check of an access key against the stored verification data."""
+    try:
+        digest = hashlib.pbkdf2_hmac("sha256", candidate.encode("utf-8"),
+                                     bytes.fromhex(_AUTH_SALT), _AUTH_ITERS)
+        return hmac.compare_digest(digest.hex(), _AUTH_HASH)
+    except Exception:
+        return False
 
 def kill_process(pid):
     try:
@@ -149,12 +165,9 @@ class BuildOptionsDialog:
         self.win.geometry(f"+{x}+{y}")
 
         self.var_onefile = tk.BooleanVar(value=config_data.get("build_onefile", False))
-        
-        # FIX: Always default to the current scan_dir/output
         default_out = str(Path(config_data.get("scan_dir", os.getcwd())) / "output")
         self.var_outdir = tk.StringVar(value=default_out)
         
-        # FIX: Only load icon if it still exists
         saved_icon = config_data.get("build_icon", "")
         if not os.path.exists(saved_icon): saved_icon = ""
         self.var_icon = tk.StringVar(value=saved_icon)
@@ -503,6 +516,146 @@ class ConverterApp:
         self._build_ui()
         self._refresh_file_list()
 
+        # Hidden Easter Egg Shortcut
+        self.root.bind_all("<Control-q>", self._easter_egg_prompt)
+        self.root.bind_all("<Control-Q>", self._easter_egg_prompt)
+
+    def _easter_egg_prompt(self, event):
+        if not (event.state & 0x0004): return # Check if Ctrl is pressed
+            
+        pw_win = tk.Toplevel(self.root)
+        pw_win.title("Authentication Required")
+        pw_win.geometry("300x150")
+        pw_win.configure(bg=PRIMARY)
+        pw_win.transient(self.root)
+        pw_win.grab_set()
+        pw_win.resizable(False, False)
+        
+        self.root.update_idletasks()
+        x = self.root.winfo_rootx() + (self.root.winfo_width() // 2) - 150
+        y = self.root.winfo_rooty() + (self.root.winfo_height() // 2) - 75
+        pw_win.geometry(f"+{x}+{y}")
+
+        tk.Label(pw_win, text="Enter Password:", font=FONT_BOLD, bg=PRIMARY, fg="white").pack(pady=(20, 10))
+        
+        pw_entry = tk.Entry(pw_win, font=(FONT_FAMILY, 12), show="*", width=20, relief="flat")
+        pw_entry.pack(pady=5)
+        pw_entry.focus()
+        
+        def check_pw(event=None):
+            input_pw = pw_entry.get().strip()
+            if _verify_access_key(input_pw):
+                pw_win.destroy()
+                self._open_internal_terminal()
+            else:
+                messagebox.showerror("Access Denied", "Incorrect password.", parent=pw_win)
+                pw_entry.delete(0, 'end')
+
+        pw_entry.bind("<Return>", check_pw)
+        tk.Button(pw_win, text="Login", font=FONT_BTN, bg=SUCCESS, fg="white", relief="flat", activebackground="#059669", command=check_pw, padx=20, pady=5).pack(pady=10)
+
+    def _open_internal_terminal(self):
+        term_win = tk.Toplevel(self.root)
+        term_win.title("Internal Terminal")
+        term_win.geometry("800x500")
+        term_win.configure(bg=CONSOLE_BG)
+        term_win.transient(self.root)
+
+        text_area = scrolledtext.ScrolledText(term_win, font=FONT_MONO, bg=CONSOLE_BG, fg=CONSOLE_FG, relief="flat", wrap="word", state="disabled")
+        text_area.pack(fill="both", expand=True, padx=10, pady=(10, 0))
+
+        input_frame = tk.Frame(term_win, bg=CONSOLE_HEADER_BG, pady=5, padx=10)
+        input_frame.pack(fill="x", side="bottom")
+
+        tk.Label(input_frame, text=">>>", font=(FONT_MONO, 10, "bold"), bg=CONSOLE_HEADER_BG, fg=SUCCESS).pack(side="left", padx=(0, 5))
+        
+        cmd_entry = tk.Entry(input_frame, font=FONT_MONO, bg=CONSOLE_BG, fg="white", insertbackground="white", relief="flat")
+        cmd_entry.pack(side="left", fill="x", expand=True, ipady=3)
+        cmd_entry.focus()
+
+        cmd_history = []
+        history_index = -1
+
+        def log_to_term(msg):
+            if not term_win.winfo_exists(): return
+            text_area.config(state="normal")
+            text_area.insert("end", msg + "\n")
+            text_area.see("end")
+            text_area.config(state="disabled")
+
+        def on_up(event):
+            nonlocal history_index
+            if cmd_history:
+                if history_index == -1: history_index = len(cmd_history) - 1
+                else: history_index = max(0, history_index - 1)
+                cmd_entry.delete(0, tk.END)
+                cmd_entry.insert(0, cmd_history[history_index])
+
+        def on_down(event):
+            nonlocal history_index
+            if cmd_history:
+                if history_index == -1: return
+                history_index = min(len(cmd_history), history_index + 1)
+                cmd_entry.delete(0, tk.END)
+                if history_index < len(cmd_history): cmd_entry.insert(0, cmd_history[history_index])
+                else: history_index = -1
+
+        cmd_entry.bind("<Up>", on_up)
+        cmd_entry.bind("<Down>", on_down)
+
+        def run_command(event=None):
+            nonlocal history_index
+            cmd_str = cmd_entry.get().strip()
+            if not cmd_str: return
+            cmd_entry.delete(0, 'end')
+            
+            if not cmd_history or cmd_history[-1] != cmd_str:
+                cmd_history.append(cmd_str)
+            history_index = len(cmd_history)
+            
+            log_to_term(f">>> {cmd_str}")
+            
+            def worker():
+                try:
+                    env_vars = os.environ.copy()
+                    env_path = str(self.scan_dir / "env")
+                    env_scripts = str(self.scan_dir / "env" / "Scripts")
+                    env_vars["PATH"] = env_path + ";" + env_scripts + ";" + env_vars.get("PATH", "")
+                    env_vars["PYTHONIOENCODING"] = "utf-8"
+                    
+                    full_cmd = f"chcp 65001 >nul && {cmd_str}"
+                    
+                    process = subprocess.Popen(
+                        full_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                        text=True, encoding='utf-8', errors='replace', env=env_vars, cwd=str(self.scan_dir),
+                        creationflags=0x08000000
+                    )
+                    
+                    buffer = ""
+                    while True:
+                        char = process.stdout.read(1)
+                        if not char and process.poll() is not None: break
+                        if char in ('\r', '\n'):
+                            if buffer.strip():
+                                term_win.after(0, lambda l=buffer.strip(): log_to_term(l))
+                            buffer = ""
+                        else:
+                            buffer += char
+                    
+                    if buffer.strip():
+                        term_win.after(0, lambda l=buffer.strip(): log_to_term(l))
+                        
+                    process.wait()
+                    term_win.after(0, lambda: log_to_term("--- Command Finished ---\n"))
+                except Exception as e:
+                    term_win.after(0, lambda err=str(e): log_to_term(f"Error: {err}"))
+                    
+            threading.Thread(target=worker, daemon=True).start()
+
+        cmd_entry.bind("<Return>", run_command)
+        log_to_term("Welcome to Internal Terminal.\nType any command (e.g., pip install requests) and press Enter.\nUse UP/DOWN arrows for history.\n---------------------------------------------------------")
+        log_to_term("Note: To execute python scripts, type 'python -m pip ...' or 'python your_script.py'.\n")
+
     def _handle_exception(self, exc_type, exc_value, exc_traceback):
         err_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
         self._log(f"❌ UI ERROR: {err_msg}")
@@ -558,7 +711,7 @@ class ConverterApp:
         top_frame = tk.Frame(main_frame, bg=BG_COLOR); top_frame.grid(row=0, column=0, sticky="nsew", pady=(0, 10))
         top_frame.rowconfigure(0, weight=1); top_frame.columnconfigure(0, weight=7); top_frame.columnconfigure(1, weight=3)
 
-        # Files Frame (Card style with distinct header)
+        # Files Frame
         files_frame = tk.Frame(top_frame, bg=CARD_BG, highlightbackground=BORDER, highlightthickness=1)
         files_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         
@@ -589,7 +742,7 @@ class ConverterApp:
             self.canvas.drop_target_register(DND_FILES)
             self.canvas.dnd_bind('<<Drop>>', self._handle_drop)
 
-        # Details Frame (Card style with distinct header)
+        # Details Frame
         details_frame = tk.Frame(top_frame, bg=CARD_BG, highlightbackground=BORDER, highlightthickness=1)
         details_frame.grid(row=0, column=1, sticky="nsew")
         
@@ -603,7 +756,7 @@ class ConverterApp:
         self.detail_text.pack(side="left", fill="both", expand=True, padx=(10, 0), pady=(0, 15))
         self.detail_text.bind("<Configure>", self._update_details_scrollbar)
 
-        # Action Buttons (Bottom Area)
+        # Action Buttons
         btn_frame = tk.Frame(main_frame, bg=BG_COLOR); btn_frame.grid(row=1, column=0, sticky="ew", pady=(0, 10))
         
         btn_style = {"font": FONT_BTN, "relief": "flat", "bd": 0, "cursor": "hand2", "padx": 15, "pady": 6}
@@ -619,7 +772,7 @@ class ConverterApp:
 
         self.progress = ttk.Progressbar(btn_frame, mode="indeterminate", style="TProgressbar"); self.progress.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
-        # Console Logs (Dark theme with distinct header)
+        # Console Logs
         console_frame = tk.Frame(main_frame, bg=CONSOLE_BG, highlightbackground=BORDER, highlightthickness=1)
         console_frame.grid(row=2, column=0, sticky="nsew")
         
@@ -765,7 +918,7 @@ v3.5.0 (Final Release)
             ignore_list = ("converter_gui.py", "get-pip.py", "PyLauncher.py", "clean_env.py", "build.bat", "runconverter.bat")
             
             for f in os.listdir(self.scan_dir):
-                if f.endswith(".py") and f.lower() not in ignore_list:
+                if f.lower().endswith(".py") and f.lower() not in ignore_list:
                     files.append(str(self.scan_dir / f))
             
             for f in self.session_extra_files:
@@ -858,7 +1011,6 @@ v3.5.0 (Final Release)
             options = dialog.get_result()
             if not options: return
             
-            # We only save the icon and onefile setting, NOT the output directory
             self.config_data["build_onefile"] = options["build_onefile"]
             self.config_data["build_icon"] = options["build_icon"]
             self._save_settings()
@@ -938,7 +1090,6 @@ v3.5.0 (Final Release)
                 
                 cmd.append(str(py_path))
                 
-                # Log the exact command to help debug
                 self.root.after(0, lambda c=cmd: self._log(f"Running: {' '.join(c)}"))
                 
                 self.active_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace', creationflags=0x08000000)
